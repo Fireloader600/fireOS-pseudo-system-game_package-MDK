@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<game>
+  <pack_name>example game</pack_name>
+  <pack_version>1.0.0</pack_version>
+  <description>hamberger shop game</description>
+  <startup_class>Main</startup_class>
+  <icon>🍔</icon>
+</game>

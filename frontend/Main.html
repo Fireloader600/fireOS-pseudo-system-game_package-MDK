@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>汉堡店🍔</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:radial-gradient(circle at 20% 0%,#ffe9c9,#f7d9a8 60%,#eec57f);
+  min-height:100vh;padding:18px;color:#4b2e14;
+  -webkit-font-smoothing:antialiased;
+}
+.app{max-width:1180px;margin:0 auto}
+
+/* ===== 顶栏 ===== */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  background:linear-gradient(135deg,#ffa94d,#ff7b29);
+  color:#fff;padding:16px 22px;border-radius:20px;
+  box-shadow:0 8px 0 #cf5a15,0 14px 26px rgba(150,70,10,.3);
+  margin-bottom:20px;
+}
+.topbar h1{font-size:26px;letter-spacing:2px;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+.money-box{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(0,0,0,.2);padding:8px 18px;border-radius:14px;
+}
+.money-box .label{font-size:13px;opacity:.85}
+.money-box .money{font-size:24px;font-weight:800;color:#ffe066;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+
+/* ===== 布局 ===== */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.card{
+  background:#fffdf8;border-radius:18px;padding:16px;
+  box-shadow:0 6px 0 #e0cdb0,0 12px 22px rgba(120,80,40,.13);
+  border:2px solid #f3e3cc;
+}
+.card h2{font-size:17px;margin-bottom:12px;color:#7a4a1d;display:flex;align-items:center;gap:6px}
+.card h2 small{font-size:12px;color:#b09578;font-weight:400}
+
+/* ===== 商店 ===== */
+.shop-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:12px;background:#fff7ea;
+  margin-bottom:8px;border:1.5px solid #f0dfc6;
+}
+.shop-item .emoji{font-size:24px;width:34px;text-align:center}
+.shop-item .info{flex:1;min-width:0}
+.shop-item .name{font-weight:700;font-size:14px}
+.shop-item .meta{font-size:11px;color:#a08060;margin-top:2px}
+.shop-item .right{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.shop-item .stock{font-size:11px;color:#8a6a4a;background:#f1e2cb;padding:1px 8px;border-radius:8px}
+.btn-buy{
+  background:linear-gradient(#54d96c,#2eb84a);color:#fff;border:none;
+  padding:5px 13px;border-radius:9px;font-weight:800;font-size:13px;cursor:pointer;
+  box-shadow:0 3px 0 #1e8a35;transition:transform .08s,box-shadow .08s;
+}
+.btn-buy:active{transform:translateY(2px);box-shadow:0 1px 0 #1e8a35}
+.btn-buy:disabled{background:#c9c9c9;box-shadow:0 3px 0 #a0a0a0;cursor:not-allowed}
+
+/* ===== 组合台 ===== */
+#kitchenList{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kit-item{
+  background:#fff7ea;border:2px solid #f0dfc6;border-radius:12px;
+  padding:9px 4px;text-align:center;cursor:pointer;user-select:none;
+  transition:.12s;position:relative;
+}
+.kit-item .emoji{font-size:22px}
+.kit-item .name{font-size:12px;font-weight:700;margin-top:3px}
+.kit-item .meta{font-size:10.5px;color:#b08050}
+.kit-item:hover{transform:translateY(-2px);border-color:#ffb86b}
+.kit-item.on{background:linear-gradient(#fff0cc,#ffe2a8);border-color:#ff9f43;box-shadow:0 0 0 3px rgba(255,159,67,.25)}
+.kit-item.on::after{
+  content:"✓";position:absolute;top:2px;right:6px;color:#ff7b29;font-weight:900;font-size:13px;
+}
+.kit-item.locked{opacity:.4;cursor:not-allowed}
+.kit-item.locked:hover{transform:none;border-color:#f0dfc6}
+
+.preview{
+  margin-top:12px;padding:10px 12px;background:#f6f0e4;border-radius:12px;
+  border:1.5px dashed #ddc9ab;min-height:52px;
+  display:flex;flex-direction:column;justify-content:center;gap:5px;
+}
+.pv-items{font-size:20px;letter-spacing:3px}
+.pv-sat{font-size:13px;color:#7a4a1d}
+.pv-sat b{color:#ff7b29;font-size:16px}
+.muted{color:#b09578}
+
+/* ===== 按钮 ===== */
+.btn{
+  width:100%;margin-top:12px;padding:11px;border:none;border-radius:13px;
+  font-size:15px;font-weight:800;cursor:pointer;color:#fff;
+  background:linear-gradient(#ffb457,#ff8c2b);
+  box-shadow:0 4px 0 #cd6a17;transition:transform .08s,box-shadow .08s;
+}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #cd6a17}
+.btn.primary{background:linear-gradient(#ff9f43,#ff7b29);box-shadow:0 4px 0 #c05211}
+.btn.green{background:linear-gradient(#54d96c,#2eb84a);box-shadow:0 4px 0 #1e8a35}
+
+/* ===== 货架 ===== */
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:9px;min-height:80px}
+.burger-card{
+  background:linear-gradient(#fff3dd,#ffe7bf);border:2px solid #f5cf95;
+  border-radius:13px;padding:8px 6px;text-align:center;cursor:pointer;
+  transition:.12s;
+}
+.burger-card:hover{transform:translateY(-3px);box-shadow:0 6px 12px rgba(180,120,40,.25);border-color:#ff9f43}
+.burger-card .b-emoji{font-size:26px}
+.burger-card .b-items{font-size:12px;letter-spacing:1px;margin:3px 0}
+.burger-card .b-sat{font-size:11px;font-weight:800;color:#d9711a}
+.sell-hint{font-size:10px;color:#2eb84a;font-weight:800;margin-top:2px}
+.empty{grid-column:1/-1;text-align:center;color:#c0a888;font-size:13px;padding:22px 0}
+
+/* ===== 顾客 ===== */
+.customer-box{
+  min-height:92px;display:flex;align-items:center;justify-content:center;
+  background:#f6f0e4;border-radius:13px;padding:12px;border:1.5px dashed #ddc9ab;
+}
+.customer{display:flex;align-items:center;gap:12px}
+.customer .face{font-size:38px;animation:bob 1.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.bubble{
+  background:#fff;border-radius:14px;padding:9px 14px;font-size:13.5px;
+  border:2px solid #ffd9a8;position:relative;max-width:200px;
+}
+.bubble::before{
+  content:"";position:absolute;left:-9px;top:50%;transform:translateY(-50%);
+  border:6px solid transparent;border-right-color:#ffd9a8;
+}
+
+/* ===== 日志 ===== */
+.log{margin-top:12px;max-height:120px;overflow-y:auto;font-size:12px;color:#8a6a4a}
+.log div{padding:4px 8px;border-bottom:1px dashed #eee0c8;line-height:1.5}
+.log div:last-child{border-bottom:none}
+
+/* ===== 弹窗 ===== */
+.modal{
+  position:fixed;inset:0;background:rgba(60,30,0,.55);display:none;
+  align-items:center;justify-content:center;z-index:99;padding:20px;
+  backdrop-filter:blur(3px);
+}
+.modal.show{display:flex}
+.modal-box{
+  background:#fffdf8;border-radius:22px;padding:26px 24px;text-align:center;
+  max-width:340px;width:100%;animation:pop .3s cubic-bezier(.2,1.4,.5,1);
+  box-shadow:0 14px 0 #c9a97a,0 22px 40px rgba(0,0,0,.3);
+}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-face{font-size:64px;line-height:1}
+.modal-title{font-size:21px;font-weight:900;margin:8px 0 10px}
+.modal-title.good{color:#2eb84a}
+.modal-title.bad{color:#e5484d}
+.modal-text{font-size:13.5px;color:#7a5a3a;line-height:1.9}
+.modal-text b{color:#ff7b29}
+
+/* ===== Toast ===== */
+#toast{
+  position:fixed;left:50%;bottom:34px;transform:translate(-50%,26px);
+  background:rgba(60,32,8,.94);color:#ffe7c2;padding:11px 22px;border-radius:13px;
+  font-size:13.5px;font-weight:700;opacity:0;pointer-events:none;transition:.28s;z-index:200;
+  max-width:90vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <h1>🍔 汉堡店</h1>
+    <div class="money-box">
+      <span class="label">资金</span>
+      <span class="money">$<span id="money">1000</span></span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 商店 -->
+    <section class="card">
+      <h2>🛒 食材商店</h2>
+      <div id="shopList"></div>
+    </section>
+
+    <!-- 组合台 -->
+    <section class="card">
+      <h2>🍳 组合台</h2>
+      <div id="kitchenList"></div>
+      <div class="preview" id="preview"></div>
+      <button class="btn primary" id="combineBtn">组合 🔨</button>
+    </section>
+
+    <!-- 货架 -->
+    <section class="card">
+      <h2>🧺 货架 <small id="shelfCount"></small></h2>
+      <div class="shelf" id="shelfList"></div>
+    </section>
+
+    <!-- 顾客 -->
+    <section class="card">
+      <h2>🧑‍🍳 顾客</h2>
+      <div class="customer-box" id="customerBox"></div>
+      <button class="btn green" id="callBtn">招呼顾客 📣</button>
+      <div class="log" id="log"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- 评价弹窗 -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-face" id="modalFace">😄</div>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-text" id="modalText"></div>
+    <button class="btn primary" id="modalClose">继续营业</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   数据配置
+   ========================================================= */
+const ORDER = ['bread','cabbage','chicken','beef','pork','cheese'];
+
+const ING = {
+  bread:   { name:'面包',   emoji:'🍞', price:2,  sat:5,   per:1, unit:'个' },
+  cabbage: { name:'白菜',   emoji:'🥬', price:5,  sat:2.5, per:1, unit:'片' },
+  chicken: { name:'鸡肉',   emoji:'🍗', price:10, sat:10,  per:1, unit:'块' },
+  beef:    { name:'牛肉',   emoji:'🥩', price:15, sat:8,   per:1, unit:'块' },
+  pork:    { name:'猪肉',   emoji:'🥓', price:4,  sat:1,   per:1, unit:'片' },
+  cheese:  { name:'芝士片', emoji:'🧀', price:20, sat:15,  per:3, unit:'片' },
+};
+
+/* 随机额外饱和值池（权重抽取） */
+const EXTRAS = [
+  { name:'没什么特别的',   sat:0,  w:12 },
+  { name:'一片新鲜生菜',   sat:2,  w:12 },
+  { name:'秘制酱料',       sat:5,  w:14 },
+  { name:'焦香洋葱圈',     sat:6,  w:12 },
+  { name:'酥脆培根碎',     sat:7,  w:10 },
+  { name:'芝士爆浆',       sat:9,  w:8  },
+  { name:'神秘香料',       sat:10, w:6  },
+  { name:'双倍香浓',       sat:12, w:4  },
+  { name:'传说级和牛油',   sat:15, w:2  },
+];
+
+const GOOD_LINE = 75;   // 好评线
+
+/* =========================================================
+   游戏状态
+   ========================================================= */
+const state = {
+  money: 1000,
+  inv:   Object.fromEntries(ORDER.map(k => [k, 0])),
+  pick:  Object.fromEntries(ORDER.map(k => [k, false])),
+  shelf: [],
+  customer: null,
+  nextId: 1,
+  logs: [],
+  stats: { made:0, sold:0, good:0, bad:0 },
+};
+
+/* =========================================================
+   工具
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const fmt = n => (Math.round(n * 10) / 10).toString();
+
+let toastTimer;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function log(msg){
+  state.logs.unshift(msg);
+  if (state.logs.length > 40) state.logs.pop();
+  $('log').innerHTML = state.logs.map(m => `<div>${m}</div>`).join('');
+}
+
+function rollExtra(){
+  const total = EXTRAS.reduce((s,e) => s + e.w, 0);
+  let r = Math.random() * total;
+  for (const e of EXTRAS){
+    r -= e.w;
+    if (r <= 0) return e;
+  }
+  return EXTRAS[0];
+}
+
+/* =========================================================
+   渲染
+   ========================================================= */
+function render(){
+  $('money').textContent = state.money;
+  renderShop();
+  renderKitchen();
+  renderShelf();
+  renderCustomer();
+}
+
+function renderShop(){
+  $('shopList').innerHTML = ORDER.map(k => {
+    const g = ING[k];
+    const ok = state.money >= g.price;
+    return `
+      <div class="shop-item">
+        <div class="emoji">${g.emoji}</div>
+        <div class="info">
+          <div class="name">${g.name}</div>
+          <div class="meta">饱和 +${g.sat} · ${g.per}${g.unit}装</div>
+        </div>
+        <div class="right">
+          <div class="stock">库存 ${state.inv[k]} ${g.unit}</div>
+          <button class="btn-buy" data-buy="${k}" ${ok ? '' : 'disabled'}>$${g.price}</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderKitchen(){
+  $('kitchenList').innerHTML = ORDER.map(k => {
+    const g = ING[k];
+    const on = state.pick[k];
+    const has = state.inv[k] >= g.per;
+    return `
+      <div class="kit-item ${on ? 'on' : ''} ${has ? '' : 'locked'}" data-pick="${k}">
+        <div class="emoji">${g.emoji}</div>
+        <div class="name">${g.name}</div>
+        <div class="meta">+${g.sat}</div>
+      </div>`;
+  }).join('');
+
+  const chosen = ORDER.filter(k => state.pick[k]);
+  if (chosen.length === 0){
+    $('preview').innerHTML = '<span class="muted">还没有选任何食材…</span>';
+  } else {
+    const baseSat = chosen.reduce((s,k) => s + ING[k].sat * ING[k].per, 0);
+    $('preview').innerHTML = `
+      <div class="pv-items">${chosen.map(k => ING[k].emoji).join('')}</div>
+      <div class="pv-sat">基础饱和值 <b>${fmt(baseSat)}</b>
+        <span class="muted">（组合后还有随机额外饱和值）</span>
+      </div>`;
+  }
+}
+
+function renderShelf(){
+  $('shelfCount').textContent = `(${state.shelf.length} 个)`;
+  if (state.shelf.length === 0){
+    $('shelfList').innerHTML = '<div class="empty">货架空空如也…<br>先去组合一个汉堡吧！</div>';
+    return;
+  }
+  $('shelfList').innerHTML = state.shelf.map(b => `
+    <div class="burger-card" data-burger="${b.id}">
+      <div class="b-emoji">🍔</div>
+      <div class="b-items">${b.items.map(k => ING[k].emoji).join('')}</div>
+      <div class="b-sat">饱和 ${fmt(b.sat)}</div>
+      ${state.customer ? '<div class="sell-hint">点击卖出</div>' : ''}
+    </div>
+  `).join('');
+}
+
+function renderCustomer(){
+  const box = $('customerBox');
+  if (!state.customer){
+    box.innerHTML = '<div class="empty">还没有顾客…<br>点击下面的按钮招呼顾客！</div>';
+    return;
+  }
+  box.innerHTML = `
+    <div class="customer">
+      <div class="face">${state.customer.face}</div>
+      <div class="bubble">${state.customer.line}</div>
+    </div>`;
+}
+
+/* =========================================================
+   操作：购买
+   ========================================================= */
+function buy(key){
+  const g = ING[key];
+  if (state.money < g.price){
+    toast('💸 资金不够了！');
+    return;
+  }
+  state.money -= g.price;
+  state.inv[key] += g.per;
+  toast(`买入 ${g.name} ×${g.per}${g.unit}，花费 $${g.price}`);
+  render();
+}
+
+/* =========================================================
+   操作：选择食材
+   ========================================================= */
+function togglePick(key){
+  if (state.pick[key]){
+    state.pick[key] = false;
+  } else {
+    if (state.inv[key] < ING[key].per){
+      toast(`❌ ${ING[key].name}不够了，先去商店买吧！`);
+      return;
+    }
+    state.pick[key] = true;
+  }
+  render();
+}
+
+/* =========================================================
+   操作：组合
+   ========================================================= */
+function combine(){
+  const chosen = ORDER.filter(k => state.pick[k]);
+  if (chosen.length === 0){
+    toast('至少选一样食材吧！');
+    return;
+  }
+  for (const k of chosen){
+    if (state.inv[k] < ING[k].per){
+      toast(`❌ ${ING[k].name}不够了`);
+      return;
+    }
+  }
+
+  let sat = 0;
+  const items = [];
+  for (const k of chosen){
+    state.inv[k] -= ING[k].per;
+    sat += ING[k].sat * ING[k].per;
+    state.pick[k] = false;
+    items.push(k);
+  }
+
+  const extra = rollExtra();
+  sat = Math.round((sat + extra.sat) * 10) / 10;
+
+  state.shelf.push({
+    id: state.nextId++,
+    items,
+    sat,
+    extraName: extra.name,
+    extraSat: extra.sat,
+  });
+  state.stats.made++;
+
+  toast(`🍔 组合完成！额外获得「${extra.name}」+${extra.sat}`);
+  log(`🔨 做出一个汉堡，饱和值 ${fmt(sat)}（额外：${extra.name} +${extra.sat}）`);
+  render();
+}
+
+/* =========================================================
+   操作：招呼顾客
+   ========================================================= */
+const FACES = ['🧑','👩','👨','👧','👦','🧓','👵','🧔','👩‍🦰','🧑‍🎤','👮','🧑‍💼'];
+const LINES = [
+  '老板，来个汉堡！',
+  '我饿了，快给我做一个～',
+  '听说这家店很火，试试看！',
+  '来一个招牌汉堡！',
+  '闻起来好香啊，给我来一个！',
+  '今天想吃点好的 😋',
+  '老板，我赶时间，快一点！',
+];
+
+function callCustomer(){
+  if (state.customer) return;
+
+  if (state.shelf.length === 0){
+    toast('😠 货架上没有汉堡，顾客扭头走了…');
+    log('😠 顾客来了，但货架上空空如也，他生气地走了。');
+    return;
+  }
+
+  state.customer = {
+    face: FACES[Math.floor(Math.random() * FACES.length)],
+    line: LINES[Math.floor(Math.random() * LINES.length)],
+  };
+  render();
+}
+
+/* =========================================================
+   操作：卖出汉堡
+   ========================================================= */
+function serveBurger(id){
+  if (!state.customer){
+    toast('还没有顾客呢，先点「招呼顾客」吧！');
+    return;
+  }
+  const idx = state.shelf.findIndex(b => b.id === id);
+  if (idx < 0) return;
+
+  const burger = state.shelf[idx];
+  state.shelf.splice(idx, 1);
+
+  const good = burger.sat >= GOOD_LINE;
+  const base = burger.sat * 1.2;
+  const price = good
+      ? Math.round(base * 1.15) + 15
+      : Math.round(base * 0.7);
+
+  state.money += price;
+  state.stats.sold++;
+  good ? state.stats.good++ : state.stats.bad++;
+
+  const customer = state.customer;
+  state.customer = null;
+
+  log(`${good ? '😄 好评' : '😠 差评'} · 饱和值 ${fmt(burger.sat)} · 收入 $${price}`);
+
+  showResult(customer, burger, good, price);
+  render();
+}
+
+function showResult(customer, burger, good, price){
+  $('modalFace').textContent = good ? '😄' : '😠';
+  const title = $('modalTitle');
+  title.textContent = good ? '好评！太好吃了！' : '差评…这什么味道…';
+  title.className = 'modal-title ' + (good ? 'good' : 'bad');
+
+  $('modalText').innerHTML = `
+    顾客 ${customer.face} 吃完了你的汉堡<br>
+    总饱和值：<b>${fmt(burger.sat)}</b>（好评线 ${GOOD_LINE}）<br>
+    额外风味：${burger.extraName} +${burger.extraSat}<br>
+    支付金额：<b>$${price}</b>
+  `;
+  $('modal').classList.add('show');
+}
+
+/* =========================================================
+   事件绑定
+   ========================================================= */
+document.addEventListener('click', e => {
+  const buyBtn = e.target.closest('[data-buy]');
+  if (buyBtn){ buy(buyBtn.dataset.buy); return; }
+
+  const kit = e.target.closest('[data-pick]');
+  if (kit){ togglePick(kit.dataset.pick); return; }
+
+  const burger = e.target.closest('[data-burger]');
+  if (burger){ serveBurger(Number(burger.dataset.burger)); return; }
+});
+
+$('combineBtn').addEventListener('click', combine);
+$('callBtn').addEventListener('click', callCustomer);
+$('modalClose').addEventListener('click', () => $('modal').classList.remove('show'));
+$('modal').addEventListener('click', e => {
+  if (e.target === $('modal')) $('modal').classList.remove('show');
+});
+
+/* =========================================================
+   启动
+   ========================================================= */
+log('🏪 汉堡店开张！初始资金 $1000。');
+log('💡 提示：食材和额外饱和值都会影响总饱和值，达到 75 以上才能拿到好评 😄');
+render();
+</script>
+</body>
+</html>
